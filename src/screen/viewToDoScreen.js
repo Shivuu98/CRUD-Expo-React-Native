@@ -5,74 +5,83 @@ import { db } from "../config/firebaseConfig";
 import TodoItem from "../components/toDoItem";
 
 const ViewTodoScreen = ({ navigation }) => {
-    const [ todos, setTodos ] = useState ([]);
-    const [ refreshing, setRefreshing ] = useState ([]);
+    // Pastikan inisialisasi tipe data benar
+    const [todos, setTodos] = useState([]); // Array untuk todos
+    const [refreshing, setRefreshing] = useState(false); // Boolean untuk refreshing
 
-    const fetchTodo = useCallback(async() => {
-        try{
-            const querySnapshots = await getDocs( collection( db, "todos"));
+    const fetchTodo = useCallback(async () => {
+        try {
+            const querySnapshots = await getDocs(collection(db, "todos"));
             const todosData = querySnapshots.docs.map(docSnap => ({
                 id: docSnap.id,
-                ...docSnap.data()
+                ...docSnap.data(),
             }));
-            setTodos(todosData);
+            setTodos(todosData || []); // Pastikan todosData adalah array
         } catch (error) {
-            console.error("Error fetching data : ", error);
+            console.error("Error fetching data: ", error);
+            setTodos([]); // Atur array kosong jika error
         }
     }, []);
 
-    useEffect(() =>{
+    useEffect(() => {
         fetchTodo();
     }, [fetchTodo]);
 
-    const handleUpdateStatus = useCallback(async(id, currentStatus) => {
-            const newStatus = currentStatus === 'Doing' ? 'Done' : 'Doing';
-            try{
-                const todoRef = doc(db, 'todos', id);
-                await updateDoc(todoRef, {status:newStatus});
-                setTodos(prevTodos => 
-                    prevTodos.map(todo =>
-                        todo.id === id ? {...todo, status:newStatus} : todo
-                    )
-                );
-            } catch (error) {
-                console.error("Error fetching data : ", error);
-            }
+    const handleUpdateStatus = useCallback(async (id, currentStatus) => {
+        const newStatus = currentStatus === 'Doing' ? 'Done' : 'Doing';
+        try {
+            const todoRef = doc(db, 'todos', id);
+            await updateDoc(todoRef, { status: newStatus });
+            setTodos(prevTodos =>
+                prevTodos.map(todo =>
+                    todo.id === id ? { ...todo, status: newStatus } : todo
+                )
+            );
+        } catch (error) {
+            console.error("Error updating status: ", error);
+        }
     }, []);
 
-    const onRefresh = useCallback(async()  => {
-        setRefreshing(true);
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true); // Boolean: true saat mulai refresh
         await fetchTodo();
-        setRefreshing(false);
+        setRefreshing(false); // Boolean: false setelah selesai refresh
     }, [fetchTodo]);
 
     return (
-        <View style ={style.container}>
+        <View style={style.container}>
             <Button
                 title="Tambah To-Do Baru"
-                onPress={() => navigation.navigate("addTodo")}
+                onPress={() => navigation.navigate("AddTodo")}
             />
             <FlatList
-                data={todos}
-                keyExtractor={({item}) => item.id}
-                renderItem={({item}) => (
-                    <TodoItem
-                        todo={item}
-                        onUpdateStatus={() => handleUpdateStatus(item.id, item.status)}
-                    />
-                )}
-                RefreshControl ={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+                data={todos} // Pastikan ini adalah array
+                keyExtractor={(item, index) => (item?.id ? item.id : index.toString())}
+                renderItem={({ item }) => {
+                    if (!item) return null; // Abaikan jika item undefined
+                    return (
+                        <TodoItem
+                            todo={item}
+                            onUpdateStatus={() => handleUpdateStatus(item.id, item.status)}
+                        />
+                    );
+                }}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
-                ListEmptyComponent={ <View style={style.empty}><Button title="Reload" onPress={fetchTodo}/></View> }
+                ListEmptyComponent={
+                    <View style={style.empty}>
+                        <Button title="Reload" onPress={fetchTodo} />
+                    </View>
+                }
             />
         </View>
     );
 };
 
 const style = StyleSheet.create({
-    container: {flex:1, padding: 20, backgroundColor:'#fff'},
-    empty: {flex:1, padding:10, justifyContent:'center', alignContent:'item', marginTop: 50},
-})
+    container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+    empty: { flex: 1, padding: 10, justifyContent: 'center', alignItems: 'center', marginTop: 50 },
+});
 
-export default ViewTodoScreen
+export default ViewTodoScreen;

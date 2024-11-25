@@ -15,10 +15,10 @@ const AddTodoScreen = ({navigation}) => {
         }
 
         try{
-            await addDoc(collection(db, 'todo'), {
+            await addDoc(collection(db, 'todos'), {
                 todo: todo.trim(),
                 time: time.trim(),
-                description: description.trim,
+                description: description.trim(),
                 status: 'Doing',
             });
             Alert.alert('succes', 'data berhasil ditambahkan');
