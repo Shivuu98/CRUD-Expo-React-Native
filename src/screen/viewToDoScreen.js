@@ -1,21 +1,21 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Flatlist, Button, StyleSheet, RefreshControl } from "react-native";
-import { collection, getDocs, updateDoc, doc } from "react-native-firebase/firestore";
+import { View, FlatList, Button, StyleSheet, RefreshControl } from "react-native";
+import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from "../config/firebaseConfig";
 import TodoItem from "../components/toDoItem";
 
-const viewTodoScreen = ({ navigation }) => {
-    const { todo, setTodo } = useState ([]);
-    const { refreshing, setRefreshing } = useState ([]);
+const ViewTodoScreen = ({ navigation }) => {
+    const [ todos, setTodos ] = useState ([]);
+    const [ refreshing, setRefreshing ] = useState ([]);
 
     const fetchTodo = useCallback(async() => {
         try{
-            const querySnapshots = await getDocs( collection, ( db, "todo "));
-            const todoData = querySnapshots.docs.map(docSnap => ({
+            const querySnapshots = await getDocs( collection( db, "todos"));
+            const todosData = querySnapshots.docs.map(docSnap => ({
                 id: docSnap.id,
                 ...docSnap.data()
             }));
-            setTodo(todoData);
+            setTodos(todosData);
         } catch (error) {
             console.error("Error fetching data : ", error);
         }
@@ -28,10 +28,10 @@ const viewTodoScreen = ({ navigation }) => {
     const handleUpdateStatus = useCallback(async(id, currentStatus) => {
             const newStatus = currentStatus === 'Doing' ? 'Done' : 'Doing';
             try{
-                const todoRef = docs(db, 'todo', id);
+                const todoRef = doc(db, 'todos', id);
                 await updateDoc(todoRef, {status:newStatus});
-                setTodo(prevTodo => 
-                    prevTodo.map(todo =>
+                setTodos(prevTodos => 
+                    prevTodos.map(todo =>
                         todo.id === id ? {...todo, status:newStatus} : todo
                     )
                 );
@@ -52,10 +52,10 @@ const viewTodoScreen = ({ navigation }) => {
                 title="Tambah To-Do Baru"
                 onPress={() => navigation.navigate("addTodo")}
             />
-            <Flatlist
-                data={todo}
+            <FlatList
+                data={todos}
                 keyExtractor={({item}) => item.id}
-                renderItem={({tem}) => (
+                renderItem={({item}) => (
                     <TodoItem
                         todo={item}
                         onUpdateStatus={() => handleUpdateStatus(item.id, item.status)}
@@ -75,4 +75,4 @@ const style = StyleSheet.create({
     empty: {flex:1, padding:10, justifyContent:'center', alignContent:'item', marginTop: 50},
 })
 
-export default viewTodoScreen
+export default ViewTodoScreen

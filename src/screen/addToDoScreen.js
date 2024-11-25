@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from "react";
 import { View, TextInput, Alert, KeyboardAvoidingView, Platform, Button, StyleSheet } from "react-native";
-import { collection, addDoc } from "react-native-firebase/firestore";
+import { collection, addDoc } from 'firebase/firestore';
 import { db } from "../config/firebaseConfig";
 
-const addTodoScreen = ({navigation}) => {
+const AddTodoScreen = ({navigation}) => {
     const[todo, setTodo] = useState('');
     const[time, setTime] = useState('');
     const[description, setDescription] = useState('');
@@ -75,4 +75,4 @@ const style = StyleSheet.create({
     }
 });
 
-export default addTodoScreen;
+export default AddTodoScreen;

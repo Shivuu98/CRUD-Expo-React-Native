@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Button, Text, StyleSheet } from "react-native";
 
-const todoItem = React.memo(({ todo, onUpdateStatus}) => {
+const TodoItem = React.memo(({ todo, onUpdateStatus}) => {
     return(
         <View style={style.item}>
             <Text><Text style={style.title}>{todo.time}</Text></Text>
@@ -36,4 +36,4 @@ const style = StyleSheet.create({
     }
 })
 
-export default todoItem
+export default TodoItem;
